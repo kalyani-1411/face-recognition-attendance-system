@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Attendance Log</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label for="dateFilter" class="form-label">Filter by Date</label>
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-4">
+                    <label for="studentFilter" class="form-label">Filter by Student</label>
+                    <select class="form-control" id="studentFilter">
+                        <option value="">All Students</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadRegisteredPeople() {
+    try {
+        const response = await fetch('/get_registered_people');
+        const data = await response.json();
+        const select = document.getElementById('studentFilter');
+        
+        data.people.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Error loading registered people:', err);
+    }
+}
+
+async function refreshAttendance() {
+    try {
+        const response = await fetch('/get_attendance');
+        const data = await response.json();
+        
+        if (!data.records) {
+            console.error('No records found in response:', data);
+            return;
+        }
+
+        let records = data.records;
+        const dateFilter = document.getElementById('dateFilter').value;
+        const studentFilter = document.getElementById('studentFilter').value;
+        
+        // Apply filters
+        if (dateFilter) {
+            const filterDate = new Date(dateFilter).toDateString();
+            records = records.filter(record => 
+                new Date(record.timestamp).toDateString() === filterDate
+            );
+        }
+        if (studentFilter) {
+            records = records.filter(record => 
+                record.name === studentFilter
+            );
+        }
+        
+        const tableBody = document.getElementById('attendanceTableBody');
+        tableBody.innerHTML = '';
+        
+        records.forEach(record => {
+            const dt = new Date(record.timestamp);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${record.id}</td>
+                <td>${record.name}</td>
+                <td>${dt.toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                })}</td>
+                <td>${dt.toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                })}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm delete-record" data-record-id="${record.id}">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Add delete button event listeners
+        document.querySelectorAll('.delete-record').forEach(button => {
+            button.addEventListener('click', async function() {
+                const recordId = this.dataset.recordId;
+                
+                if (confirm('Are you sure you want to delete this attendance record?')) {
+                    try {
+                        const response = await fetch(`/delete_attendance/${recordId}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.closest('tr').remove();
+                            alert('Attendance record deleted successfully');
+                        } else {
+                            alert('Error deleting record: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error deleting record. Please try again.');
+                    }
+                }
+            });
+        });
+    } catch (err) {
+        console.error('Error refreshing attendance:', err);
+    }
+}
+
+function applyFilters() {
+    refreshAttendance();
+}
+
+// Load initial data
+document.addEventListener('DOMContentLoaded', () => {
+    loadRegisteredPeople();
+    refreshAttendance();
+});
+
+// Refresh attendance every 30 seconds
+setInterval(refreshAttendance, 30000);
+</script>
+{% endblock %} 

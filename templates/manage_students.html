@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Manage Students</h2>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <!-- Students will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadStudents() {
+    try {
+        const response = await fetch('/get_registered_people');
+        const data = await response.json();
+        const tableBody = document.getElementById('studentsTableBody');
+        tableBody.innerHTML = '';
+        
+        if (data.people && data.people.length > 0) {
+            data.people.forEach(name => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteStudent('${name}')">
+                            Delete
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            tableBody.innerHTML = '<tr><td colspan="2" class="text-center">No students registered</td></tr>';
+        }
+    } catch (err) {
+        console.error('Error loading students:', err);
+    }
+}
+
+async function deleteStudent(name) {
+    if (!confirm(`Are you sure you want to delete ${name}?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/delete_student', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: name })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            alert('Student deleted successfully');
+            loadStudents(); // Refresh the list
+        } else {
+            alert('Error deleting student: ' + data.message);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error deleting student. Please try again.');
+    }
+}
+
+// Load students when page loads
+document.addEventListener('DOMContentLoaded', loadStudents);
+</script>
+{% endblock %} 

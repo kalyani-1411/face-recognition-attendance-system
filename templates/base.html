@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Attendance Monitor{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3B6FB6;
+            --secondary-color: #5B9BD5;
+            --accent-1: #9DC3E6;
+            --accent-2: #DEEBF7;
+            --text-dark: #333;
+            --text-light: #fff;
+        }
+
+        body {
+            background-color: var(--accent-2);
+            color: var(--text-dark);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand, .nav-link {
+            color: var(--text-light) !important;
+            transition: opacity 0.3s ease;
+        }
+
+        .navbar-brand:hover, .nav-link:hover {
+            opacity: 0.8;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--text-light);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .feature-icon {
+            transform: scale(1.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: var(--text-light);
+        }
+
+        .btn-accent {
+            background-color: var(--accent-1);
+            border-color: var(--accent-1);
+            color: var(--text-dark);
+        }
+
+        .btn {
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            padding: 1.5rem;
+            border-radius: 10px;
+            background-color: var(--accent-2);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-item i {
+            color: var(--primary-color);
+        }
+
+        .stat-item h4 {
+            color: var(--text-dark);
+            margin-top: 0.5rem;
+        }
+
+        .stat-item p {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        table {
+            background-color: var(--text-light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        thead {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--accent-2);
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid var(--accent-1);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(59, 111, 182, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-user-check me-2"></i>
+                Smart Attendance
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/record-attendance"><i class="fas fa-camera me-1"></i> Record</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/add-student"><i class="fas fa-user-plus me-1"></i> Add Student</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/manage-students"><i class="fas fa-users-cog me-1"></i> Manage</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/attendance-log"><i class="fas fa-history me-1"></i> Log</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container content fade-in">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

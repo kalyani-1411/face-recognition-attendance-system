@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Record Attendance</h2>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <img id="video_feed" src="{{ url_for('video_feed') }}" class="img-fluid rounded" style="max-width: 100%; height: auto;">
+                    </div>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button id="startBtn" class="btn btn-success">Start Recognition</button>
+                        <button id="stopBtn" class="btn btn-danger" disabled>Stop Recognition</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const videoFeed = document.getElementById('video_feed');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+
+function refreshVideoFeed() {
+    // Force reload the video feed by updating the src with a timestamp
+    videoFeed.src = "{{ url_for('video_feed') }}?" + new Date().getTime();
+}
+
+startBtn.addEventListener('click', async function() {
+    try {
+        const response = await fetch('/start_recognition');
+        const data = await response.json();
+        
+        if(data.status === 'success') {
+            this.disabled = true;
+            stopBtn.disabled = false;
+            // Refresh the video feed
+            refreshVideoFeed();
+        } else {
+            alert('Error starting recognition: ' + data.message);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error starting recognition. Please try again.');
+    }
+});
+
+stopBtn.addEventListener('click', async function() {
+    try {
+        const response = await fetch('/stop_recognition');
+        const data = await response.json();
+        
+        if(data.status === 'success') {
+            this.disabled = true;
+            startBtn.disabled = false;
+            // Refresh the video feed to show blank frame
+            refreshVideoFeed();
+        } else {
+            alert('Error stopping recognition: ' + data.message);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error stopping recognition. Please try again.');
+    }
+});
+
+// Initial refresh of video feed when page loads
+refreshVideoFeed();
+</script>
+{% endblock %} 

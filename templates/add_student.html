@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Add New Student</h2>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <form id="addPersonForm" class="mb-4">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Student Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="roll_number" class="form-label">Roll Number</label>
+                            <input type="text" class="form-control" id="roll_number" name="roll_number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Student Photo</label>
+                            <div class="text-center">
+                                <video id="video" width="400" height="300" class="img-fluid rounded mb-3" style="display: none;"></video>
+                                <canvas id="canvas" width="400" height="300" class="img-fluid rounded mb-3" style="display: none;"></canvas>
+                                <img id="captured_image" class="img-fluid rounded mb-3" style="display: none;">
+                            </div>
+                            <div class="d-flex justify-content-center gap-3">
+                                <button type="button" id="startCamera" class="btn btn-primary">Start Camera</button>
+                                <button type="button" id="capturePhoto" class="btn btn-success" style="display: none;">Capture Photo</button>
+                                <button type="button" id="retakePhoto" class="btn btn-warning" style="display: none;">Retake Photo</button>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Add Student</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let stream = null;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const capturedImage = document.getElementById('captured_image');
+const startCameraBtn = document.getElementById('startCamera');
+const capturePhotoBtn = document.getElementById('capturePhoto');
+const retakePhotoBtn = document.getElementById('retakePhoto');
+const submitBtn = document.getElementById('submitBtn');
+
+startCameraBtn.addEventListener('click', async () => {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        canvas.style.display = 'none';
+        capturedImage.style.display = 'none';
+        await video.play();
+        startCameraBtn.style.display = 'none';
+        capturePhotoBtn.style.display = 'inline-block';
+        retakePhotoBtn.style.display = 'none';
+        submitBtn.disabled = true;
+    } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('Error accessing camera. Please make sure you have granted camera permissions.');
+    }
+});
+
+capturePhotoBtn.addEventListener('click', () => {
+    canvas.style.display = 'block';
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/jpeg');
+    capturedImage.src = imageData;
+    capturedImage.style.display = 'block';
+    video.style.display = 'none';
+    canvas.style.display = 'none';
+    capturePhotoBtn.style.display = 'none';
+    retakePhotoBtn.style.display = 'inline-block';
+    submitBtn.disabled = false;
+    
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+});
+
+retakePhotoBtn.addEventListener('click', async () => {
+    video.style.display = 'none';
+    canvas.style.display = 'none';
+    capturedImage.style.display = 'none';
+    retakePhotoBtn.style.display = 'none';
+    submitBtn.disabled = true;
+    startCameraBtn.style.display = 'inline-block';
+});
+
+document.getElementById('addPersonForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('name').value,
+        roll_number: document.getElementById('roll_number').value,
+        image: capturedImage.src
+    };
+
+    try {
+        const response = await fetch('/add_person', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            alert('Student added successfully!');
+            location.reload();
+        } else {
+            alert('Error adding student: ' + data.message);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error adding student. Please try again.');
+    }
+});
+</script>
+{% endblock %} 

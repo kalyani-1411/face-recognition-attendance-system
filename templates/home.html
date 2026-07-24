@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4 mb-3">Smart Attendance Monitoring</h1>
+        <p class="lead mb-4" style="color: var(--accent-2);"></p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-camera fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h4 mb-3">Record Attendance</h3>
+                    <p class="card-text mb-4">Take attendance using advanced facial recognition technology with live detection.</p>
+                    <a href="/record-attendance" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-2"></i>Start Recording
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-user-plus fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h4 mb-3">Add Student</h3>
+                    <p class="card-text mb-4">Register new students with their photos for facial recognition.</p>
+                    <a href="/add-student" class="btn btn-secondary">
+                        <i class="fas fa-plus me-2"></i>Add New Student
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-history fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h4 mb-3">View Log</h3>
+                    <p class="card-text mb-4">Access and manage attendance records with detailed insights.</p>
+                    <a href="/attendance-log" class="btn btn-accent">
+                        <i class="fas fa-chart-bar me-2"></i>View Records
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="mb-4">Quick Stats</h3>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <i class="fas fa-users mb-2 fa-2x"></i>
+                                <h4 class="h5 mt-2">Total Students</h4>
+                                <p class="h3 mb-0" id="totalStudents">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <i class="fas fa-clock mb-2 fa-2x"></i>
+                                <h4 class="h5 mt-2">Today's Attendance</h4>
+                                <p class="h3 mb-0" id="todayAttendance">Loading...</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <i class="fas fa-calendar-check mb-2 fa-2x"></i>
+                                <h4 class="h5 mt-2">Total Records</h4>
+                                <p class="h3 mb-0" id="totalRecords">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Function to load statistics
+async function loadStats() {
+    try {
+        // Get registered people
+        const peopleResponse = await fetch('/get_registered_people');
+        const peopleData = await peopleResponse.json();
+        document.getElementById('totalStudents').textContent = peopleData.people.length;
+
+        // Get attendance records
+        const attendanceResponse = await fetch('/get_attendance');
+        const attendanceData = await attendanceResponse.json();
+        
+        // Calculate total records
+        document.getElementById('totalRecords').textContent = attendanceData.records.length;
+        
+        // Calculate today's attendance
+        const today = new Date().toDateString();
+        const todayCount = attendanceData.records.filter(record => 
+            new Date(record.timestamp).toDateString() === today
+        ).length;
+        document.getElementById('todayAttendance').textContent = todayCount;
+    } catch (err) {
+        console.error('Error loading stats:', err);
+    }
+}
+
+// Load stats when page loads
+document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+{% endblock %} 
